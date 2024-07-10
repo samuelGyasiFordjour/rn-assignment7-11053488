@@ -5,7 +5,37 @@ import { CartContext } from './src/context/CartContext';
 const HomeScreen = ({ navigation }) => {
   const { addToCart } = useContext(CartContext);
   const [products, setProducts] = useState([]);
+  const [modalVisible, setModalVisible] = useState(false);
 
+
+  useEffect(() => {
+    fetch("https://fakestoreapi.com/products")
+      .then(response => response.json())
+      .then(data => setProducts(data))
+      .catch(error => console.error('Error fetching products:', error));
+  }, []);
+
+const truncateDescription = (description, length) => {
+  if (description.length <= length) {
+    return description;
+  }
+  return description.substring(0, length) + '...';
+};
+
+  const renderProduct = ({ item }) => (
+    <View style={styles.card}>
+      <TouchableOpacity onPress={() => navigation.navigate('  ', { product: item })}>
+        <Image source={{ uri: item.image }} style={styles.image} />
+        <Image source={require("./assets/Resize.png")} style={styles.resizeButton} />
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => addToCart(item)}>
+        <Image source={require("./assets/add_circle.png")} style={styles.addButton} />
+      </TouchableOpacity>
+      <Text style={styles.productName}>{item.title}</Text>
+      <Text style={styles.productDescription}>{truncateDescription(item.description, 100)}</Text>
+      <Text style={styles.productPrice}>${item.price}</Text>
+    </View>
+  );
 
   return (
     
@@ -47,14 +77,28 @@ const HomeScreen = ({ navigation }) => {
           contentContainerStyle={styles.productList}
         />
 
-       
+        <Modal
+  animationType="fade"
+  transparent={true}
+  visible={modalVisible}
+  onRequestClose={() => setModalVisible(!modalVisible)}>
+  <View style={styles.modalView}>
+    <TouchableOpacity onPress={() => setModalVisible(!modalVisible)} style={styles.closeButton}> 
+              <Image source={require("./assets/Close.png")} style={styles.icon} />
+    </TouchableOpacity>
+    <Text style={styles.modalTitle}>Samuel Gyasi</Text>
+    <View style={styles.coloredLine} />
+    {["Store", "Locations", "Blog", "Jewelery", "Electronic", "Clothing"].map((menuItem, index) => (
+      <Text key={index} style={styles.menuItem}>{menuItem}</Text>
+    ))}
+  </View>
+</Modal>
+
       </View>
     </ScrollView>
    
   );
-}
-
-export default HomeScreen
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -138,5 +182,44 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#de8863',
     fontWeight: 'bold'
-  },  
-})
+  },
+  modalView: {
+    flex: 1,
+    backgroundColor: 'white',
+    padding: 20,
+    borderTopRightRadius: 10,
+    borderBottomRightRadius: 10,
+    width: '70%', 
+    paddingTop: 80
+  },
+  closeButton: {
+    paddingTop: 30,
+    position: 'absolute',
+    top: 10,
+    left: 10,
+  },
+  modalTitle: {
+    fontSize: 24,
+    fontFamily: 'serif',
+    marginBottom: 0,
+  },
+   coloredLine: {
+    height: 2,
+    backgroundColor: '#de8863', 
+    marginVertical: 10,
+    width: 100,
+    marginBottom: 30,
+    marginLeft: 20
+  },
+  menuItem: {
+    fontSize: 20,
+    fontFamily: 'sans-serif',
+    marginBottom: 30,
+    color: '#666',
+   
+
+  }
+});
+
+
+export default HomeScreen;
